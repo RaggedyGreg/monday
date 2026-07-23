@@ -33,11 +33,11 @@ monday/
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── api/
-│   │   │   ├── v1/
-│   │   │   │   ├── conversations.py
-│   │   │   │   ├── messages.py
-│   │   │   │   ├── memories.py
-│   │   │   │   └── projects.py
+│   │   │   └── v1/
+│   │   │       ├── conversations.py
+│   │   │       ├── messages.py
+│   │   │       ├── memories.py
+│   │   │       └── projects.py
 │   │   ├── core/
 │   │   │   ├── config.py
 │   │   │   └── security.py
