@@ -1,52 +1,40 @@
-from fastapi import FastAPI, APIRouter
-from pydantic import BaseModel
-from typing import List
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
 
-app = FastAPI(title="Monday Backend", version="0.1.0")
+from .db.session import engine
+from .db.base import Base
+from .api.v1 import conversations, messages, memories, projects, growthEntry, settings, developer
 
+app = FastAPI(title="Monday", version="0.1.0", description="Monday — AI companion backend")
 
-class Conversation(BaseModel):
-    id: str
-    title: str
-    preview: str
-    date: str
+# ── CORS ──────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-
-class Memory(BaseModel):
-    id: str
-    type: str
-    content: str
-    importance: float
-    confidence: float
-
-
-router = APIRouter(prefix="/api/v1")
-
-SAMPLE_CONVERSATIONS = [
-    {"id": "c1", "title": "Typography scale & mobile display", "preview": "Fluid type scales using CSS clamp()", "date": "2024-03-20"},
-]
-
-SAMPLE_MEMORIES = [
-    {"id": "m1", "type": "Preferences", "content": "Works best before 7am", "importance": 0.92, "confidence": 0.97},
-]
+# ── Routers ───────────────────────────────────────────────────────
+app.include_router(conversations.router)
+app.include_router(messages.router)
+app.include_router(memories.router)
+app.include_router(projects.router)
+app.include_router(growthEntry.router)
+app.include_router(settings.router)
+app.include_router(developer.router)
 
 
-@router.get("/conversations", response_model=List[Conversation])
-def list_conversations():
-    return SAMPLE_CONVERSATIONS
-
-
-@router.get("/memories", response_model=List[Memory])
-def list_memories():
-    return SAMPLE_MEMORIES
-
-
-@router.get("/health")
+@app.get("/health", tags=["system"])
 def health():
     return {"status": "ok"}
 
 
-app.include_router(router)
+# ── Dev: auto-create tables ───────────────────────────────────────
+if os.getenv("MIGRATE_ON_STARTUP", "false").lower() in ("1", "true", "yes"):
+    Base.metadata.create_all(bind=engine)
 
 
 if __name__ == "__main__":
